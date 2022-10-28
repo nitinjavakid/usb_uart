@@ -16,33 +16,6 @@ extern "C"
 extern UART_HandleTypeDef huart2;
 volatile char terminalConnected = 0;
 
-void
-terminal_putchar(unsigned char ch)
-{
-    if (!terminalConnected)
-    {
-        return;
-    }
-    while(CDC_Transmit_FS(&ch, 1) == USBD_BUSY);
-}
-
-void
-terminal_printf(const char* format, ...)
-{
-    static uint8_t buffer[100];
-    va_list va_args;
-
-    va_start(va_args, format);
-    size_t len = vsnprintf((char*) buffer, sizeof(buffer), format, va_args);
-    va_end(va_args);
-
-    if (!terminalConnected)
-    {
-        return;
-    }
-    while(CDC_Transmit_FS(buffer, len) == USBD_BUSY);
-}
-
 static uint8_t buffer[200];
 void TerminalTask(void *argument)
 {
@@ -52,10 +25,14 @@ void TerminalTask(void *argument)
 
     for(;;)
     {
-        if (HAL_UARTEx_ReceiveToIdle(&huart2, buffer, sizeof(buffer) - 1, &bytesReceived, 1000) == HAL_OK)
+        if (HAL_UARTEx_ReceiveToIdle(&huart2, buffer, sizeof(buffer), &bytesReceived, 1000) == HAL_OK)
         {
-            buffer[bytesReceived] = '\0';
-            terminal_printf("%s", buffer);
+            if (!terminalConnected)
+            {
+                continue;
+            }
+
+            while(CDC_Transmit_FS(buffer, bytesReceived) == USBD_BUSY);
         }
 
         HAL_GPIO_WritePin(USER_LED_GPIO_Port, USER_LED_Pin, flag ? GPIO_PIN_SET : GPIO_PIN_RESET);
