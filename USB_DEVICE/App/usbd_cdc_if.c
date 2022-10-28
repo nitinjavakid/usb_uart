@@ -221,22 +221,22 @@ static int8_t CDC_Control_FS(uint8_t cmd, uint8_t* pbuf, uint16_t length)
   /* 6      | bDataBits  |   1   | Number Data bits (5, 6, 7, 8 or 16).          */
   /*******************************************************************************/
     case CDC_SET_LINE_CODING:
-    	if (length >= 7) {
-			memcpy(lineCoding, pbuf, 7);
-		}
+        if (length >= 7) {
+            memcpy(lineCoding, pbuf, 7);
+        }
     break;
 
     case CDC_GET_LINE_CODING:
-    	if (length >= 7) {
-			memcpy(pbuf, lineCoding, 7);
-		}
+        if (length >= 7) {
+            memcpy(pbuf, lineCoding, 7);
+        }
     break;
 
     case CDC_SET_CONTROL_LINE_STATE:
-    	if ((hUsbDeviceFS.request.wValue & 0x1) == 0x1)
-		{
-			terminalConnected = 1;
-		}
+        if ((hUsbDeviceFS.request.wValue & 0x1) == 0x1)
+        {
+            terminalConnected = 1;
+        }
     break;
 
     case CDC_SEND_BREAK:
